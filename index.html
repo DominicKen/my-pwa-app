@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>點名系統</title>
+
+    <!-- PWA Manifest 連結 -->
+    <link rel="manifest" href="manifest.json">
+    <!-- 佈景主題顏色 (與 manifest 中的 theme_color 對應) -->
+    <meta name="theme-color" content="#4A90E2">
+    <!-- iOS Safari 的 PWA 相關設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- 或 'default' -->
+    <meta name="apple-mobile-web-app-title" content="點名系統">
+    <!-- iOS 主螢幕圖示 (準備對應的圖示檔案，例如 192x192) -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -114,8 +126,7 @@
     </div>
 
     <script type="module">
-        // 移除了 Firebase SDK imports
-
+        // 主要應用程式邏輯 (與之前相同)
         let names = [];
         const textFileData = `
 鄧明輝
@@ -299,7 +310,7 @@
         names = parseTextFile(textFileData);
 
         const nameButtonsContainer = document.getElementById('nameButtonsContainer');
-        const saveRecordButton = document.getElementById('saveRecordButton'); // 改名
+        const saveRecordButton = document.getElementById('saveRecordButton'); 
         const viewHistoryButton = document.getElementById('viewHistoryButton');
         const countDisplay = document.getElementById('countDisplay');
         const messageBox = document.getElementById('messageBox');
@@ -325,10 +336,6 @@
         let pressedCount = 0, totalNames = names.length, nameStates = {}, itemsPerPage = 28, currentPage = 1, totalPages = Math.ceil(totalNames / itemsPerPage) || 1, deleteMode = false;
         let allHistoryRecords = []; 
         let historyDeleteModeActive = false; 
-
-        // Firebase 相關按鈕現在預設可用，因為不再依賴 Firebase 初始化
-        // if (saveRecordButton) saveRecordButton.disabled = true; 
-        // if (viewHistoryButton) viewHistoryButton.disabled = true;
 
         function initializeNameStates() {
             const newNameStates = {};
@@ -427,8 +434,8 @@
             
             const presentNamesList = names.filter(name => nameStates[name]);
             const newRecord = {
-                id: Date.now().toString(), // 使用時間戳作為唯一ID
-                timestamp: new Date().toISOString(), // ISO 格式時間戳
+                id: Date.now().toString(), 
+                timestamp: new Date().toISOString(), 
                 dateString: currentDateDisplay.textContent,
                 totalPresent: pressedCount,
                 totalNamesInList: totalNames,
@@ -437,7 +444,7 @@
 
             try {
                 let history = JSON.parse(localStorage.getItem('rollCallHistory')) || [];
-                history.unshift(newRecord); // 新紀錄加到最前面
+                history.unshift(newRecord); 
                 localStorage.setItem('rollCallHistory', JSON.stringify(history));
                 
                 showMessage("紀錄已儲存到瀏覽器！", "success"); 
@@ -476,7 +483,7 @@
                 localStorage.setItem('rollCallHistory', JSON.stringify(history));
                 
                 showMessage("歷史紀錄已成功刪除。", "success");
-                allHistoryRecords = history; // 更新本地緩存
+                allHistoryRecords = history; 
                 renderFilteredHistory();
             } catch (e) {
                 console.error("Error deleting history record from localStorage: ", e);
@@ -488,7 +495,7 @@
             const filterDate = historyDateFilter.value; 
             const filterName = historyNameFilter.value.trim().toLowerCase();
             
-            let filteredRecords = allHistoryRecords; // 使用從 localStorage 載入的 allHistoryRecords
+            let filteredRecords = allHistoryRecords; 
 
             if (filterDate) {
                 filteredRecords = filteredRecords.filter(record => {
@@ -550,8 +557,6 @@
             historyRecordsContainer.innerHTML = '<p class="text-gray-500 text-center">正在載入歷史紀錄...</p>';
             try {
                 const history = JSON.parse(localStorage.getItem('rollCallHistory')) || [];
-                // localStorage 中的紀錄可能沒有按時間戳排序，如果需要，可以在這裡排序
-                // 不過由於我們儲存時是 unshift，理論上較新的會在前面
                 allHistoryRecords = history; 
                 renderFilteredHistory(); 
             } catch (e) {
@@ -576,7 +581,6 @@
             displayPage(currentPage); showMessage(deleteMode ? "刪除模式已啟用" : "刪除模式已關閉", "warning");
         });
         
-        // 將 saveToDbButton 改為 saveRecordButton
         if (saveRecordButton) saveRecordButton.addEventListener('click', saveRecordToLocalStorage);
         
         if (viewHistoryButton) {
@@ -677,6 +681,21 @@
         prevPageButton.addEventListener('click', () => { if (currentPage > 1) displayPage(currentPage - 1); });
         nextPageButton.addEventListener('click', () => { if (currentPage < totalPages) displayPage(currentPage + 1); });
         document.addEventListener('DOMContentLoaded', initializeSystem);
+    </script>
+
+    <!-- Service Worker 註冊腳本 -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js') // 確保 sw.js 與 index.html 在同一個目錄
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(error => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
     </script>
 </body>
 </html>
