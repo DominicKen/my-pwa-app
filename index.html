@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>點名系統</title>
+    
+    <!-- PWA Manifest 連結 -->
+    <link rel="manifest" href="manifest.json">
+    <!-- 佈景主題顏色 (與 manifest 中的 theme_color 對應) -->
+    <meta name="theme-color" content="#4A90E2">
+    <!-- iOS Safari 的 PWA 相關設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="點名系統">
+    <!-- iOS 主螢幕圖示 (準備對應的圖示檔案) -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -342,7 +354,7 @@
         const historyPasswordInput = document.getElementById('historyPasswordInput');
         const historyPasswordConfirm = document.getElementById('historyPasswordConfirm');
         const historyPasswordCancel = document.getElementById('historyPasswordCancel');
-        const downloadHistoryButton = document.getElementById('downloadHistoryButton'); // 新增下載按鈕變數
+        const downloadHistoryButton = document.getElementById('downloadHistoryButton'); 
 
 
         let pressedCount = 0, totalNames = names.length, nameStates = {}, itemsPerPage = 28, currentPage = 1, totalPages = Math.ceil(totalNames / itemsPerPage) || 1, deleteMode = false;
@@ -529,10 +541,10 @@
 
             if (filteredRecords.length === 0) {
                 historyRecordsContainer.innerHTML = '<p class="text-gray-500 text-center">沒有符合篩選條件的紀錄。</p>';
-                downloadHistoryButton.disabled = true; // 新增：沒有紀錄時禁用下載按鈕
+                downloadHistoryButton.disabled = true; 
                 return;
             }
-            downloadHistoryButton.disabled = false; // 新增：有紀錄時啟用下載按鈕
+            downloadHistoryButton.disabled = false; 
 
             let recordsHtml = '';
             filteredRecords.forEach((record) => { 
@@ -584,13 +596,13 @@
             }
         }
 
-        // *** NEW: 下載歷史紀錄為 CSV 的函數 ***
+        
         function downloadHistoryAsCsv() {
-            let filteredRecords = allHistoryRecords; // 開始時使用所有緩存的紀錄
+            let filteredRecords = allHistoryRecords; 
             const filterDate = historyDateFilter.value; 
             const filterName = historyNameFilter.value.trim().toLowerCase();
 
-            // 應用與顯示相同的篩選邏輯
+            
             if (filterDate) {
                 filteredRecords = filteredRecords.filter(record => convertChineseDateToISO(record.dateString) === filterDate);
             }
@@ -604,20 +616,20 @@
             }
 
             const header = ["日期", "名單總人數", "出席人數", "出席率", "出席名單"];
-            const csvRows = [header.join(',')]; // CSV 標頭
+            const csvRows = [header.join(',')]; 
 
             filteredRecords.forEach(record => {
                 const date = `"${record.dateString}"`;
                 const total = record.totalNamesInList;
                 const present = record.totalPresent;
                 const rate = total > 0 ? `${((present / total) * 100).toFixed(1)}%` : "N/A";
-                const presentNames = `"${JSON.parse(record.presentNames || "[]").join(', ')}"`; // 將姓名陣列轉為逗號分隔的字串
+                const presentNames = `"${JSON.parse(record.presentNames || "[]").join(', ')}"`; 
                 
                 csvRows.push([date, total, present, rate, presentNames].join(','));
             });
 
             const csvString = csvRows.join('\n');
-            const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' }); // 加入BOM以支援Excel中文
+            const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' }); 
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
@@ -702,7 +714,7 @@
                 renderFilteredHistory(); 
             });
         }
-        // 新增：下載歷史紀錄按鈕事件監聽
+        
         if (downloadHistoryButton) {
             downloadHistoryButton.addEventListener('click', downloadHistoryAsCsv);
         }
@@ -757,4 +769,3 @@
     </script>
 </body>
 </html>
-
